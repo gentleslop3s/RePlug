@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "58801972086",
+    "project_id": "replug-805db",
+    "storage_bucket": "replug-805db.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:58801972086:android:59d0188d3b57b2796f5057",
+        "android_client_info": {
+          "package_name": "com.cyril.replug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOFIaWUP-83uimvuTw5EOYDYMzI3cjUj8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
