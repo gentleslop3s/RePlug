@@ -2,67 +2,46 @@ package com.cyril.replug.ui.screens.home
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.rounded.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.cyril.replug.R
 import com.cyril.replug.data.ProductViewModel
-import com.cyril.replug.navigation.ROUTE_ADD
-import com.cyril.replug.navigation.ROUTE_HOME
-import com.cyril.replug.navigation.ROUTE_PROFILE
-import com.cyril.replug.navigation.ROUTE_SEARCH
-import com.cyril.replug.navigation.ROUTE_WISHLIST
-import com.cyril.replug.ui.theme.mainBlue
+import com.cyril.replug.navigation.*
+
+// ─── Colour tokens (same as AddScreen) ───────────────────────────────────────
+private val SurfaceDark   = Color(0xFF0F1923)
+private val PageBg        = Color(0xFFF0F2F5)
+private val BorderLight   = Color(0xFFE2E6EC)
+private val TextPrimary   = Color(0xFF111827)
+private val TextSecondary = Color(0xFF6B7280)
+private val AccentBlue    = Color(0xFF1A6BF5)
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -72,7 +51,6 @@ fun HomeScreen(navController: NavController) {
     val context = LocalContext.current
     var selectedIndex by remember { mutableIntStateOf(0) }
 
-    // ✅ Activity-scoped — same instance as SellScreen
     val viewModel: ProductViewModel = viewModel(
         viewModelStoreOwner = context as androidx.activity.ComponentActivity
     )
@@ -82,6 +60,9 @@ fun HomeScreen(navController: NavController) {
     }
 
     Scaffold(
+        containerColor = PageBg,
+
+        // ── Top bar ───────────────────────────────────────────────────────────
         topBar = {
             TopAppBar(
                 title = {
@@ -91,72 +72,115 @@ fun HomeScreen(navController: NavController) {
                         modifier = Modifier.size(100.dp)
                     )
                 },
-                navigationIcon = {
+                actions = {
                     IconButton(onClick = { }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            Icons.Rounded.ShoppingCart,
+                            contentDescription = "Cart",
+                            tint = TextSecondary
+                        )
+                    }
+                    IconButton(onClick = { }) {
+                        Icon(
+                            Icons.Rounded.Notifications,
+                            contentDescription = "Notifications",
+                            tint = TextSecondary
+                        )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = Color.White,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black,
-                    actionIconContentColor = Color.Black
-                ),
-                actions = {
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.ShoppingCart, contentDescription = "Cart")
-                    }
-                    IconButton(onClick = { }) {
-                        Icon(Icons.Default.Notifications, contentDescription = "Notifications")
-                    }
-                }
+                    titleContentColor = TextPrimary,
+                    actionIconContentColor = TextSecondary
+                )
             )
         },
 
+        // ── Bottom nav ────────────────────────────────────────────────────────
         bottomBar = {
-            NavigationBar(containerColor = mainBlue) {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-                    label = { Text("Home") },
-                    selected = selectedIndex == 0,
-                    onClick = { selectedIndex = 0; navController.navigate(ROUTE_HOME) }
+            NavigationBar(
+                containerColor = Color.White,
+                tonalElevation = 0.dp,
+                modifier = Modifier.border(
+                    width = 1.dp,
+                    color = BorderLight,
+                    shape = RoundedCornerShape(0.dp)
                 )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Search") },
-                    label = { Text("Search") },
-                    selected = selectedIndex == 1,
-                    onClick = { selectedIndex = 1; navController.navigate(ROUTE_SEARCH) }
+            ) {
+                data class NavItem(
+                    val label: String,
+                    val icon: ImageVector,
+                    val route: String,
+                    val index: Int
                 )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
-                    label = { Text("Add") },
-                    selected = selectedIndex == 2,
-                    onClick = { selectedIndex = 2; navController.navigate(ROUTE_ADD) }
+
+                val items = listOf(
+                    NavItem("Home",     Icons.Rounded.Home,           ROUTE_HOME,     0),
+                    NavItem("Search",   Icons.Rounded.Search,         ROUTE_SEARCH,   1),
+                    NavItem("Add",      Icons.Rounded.Add,            ROUTE_ADD,      2),
+                    NavItem("Wishlist", Icons.Rounded.FavoriteBorder, ROUTE_WISHLIST, 3),
+                    NavItem("Profile",  Icons.Rounded.Person,         ROUTE_PROFILE,  4),
                 )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Star, contentDescription = "Wishlist") },
-                    label = { Text("Wishlist") },
-                    selected = selectedIndex == 3,
-                    onClick = { selectedIndex = 3; navController.navigate(ROUTE_WISHLIST) }
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
-                    label = { Text("Profile") },
-                    selected = selectedIndex == 4,
-                    onClick = { selectedIndex = 4; navController.navigate(ROUTE_PROFILE) }
-                )
+
+                items.forEach { item ->
+                    val isSelected = selectedIndex == item.index
+                    NavigationBarItem(
+                        icon = {
+                            if (item.index == 2) {
+                                // FAB-style Add button
+                                Box(
+                                    modifier = Modifier
+                                        .size(42.dp)
+                                        .clip(CircleShape)
+                                        .background(SurfaceDark),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        item.icon,
+                                        contentDescription = item.label,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            } else {
+                                Icon(
+                                    item.icon,
+                                    contentDescription = item.label,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        },
+                        label = {
+                            Text(
+                                item.label,
+                                fontSize = 11.sp,
+                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        },
+                        selected = isSelected,
+                        onClick = {
+                            selectedIndex = item.index
+                            navController.navigate(item.route)
+                        },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor   = SurfaceDark,
+                            selectedTextColor   = SurfaceDark,
+                            unselectedIconColor = TextSecondary,
+                            unselectedTextColor = TextSecondary,
+                            indicatorColor      = Color.Transparent
+                        )
+                    )
+                }
             }
         },
 
         content = { paddingValues ->
-
-            // ✅ 2-column grid replacing the LazyColumn list
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
@@ -164,15 +188,17 @@ fun HomeScreen(navController: NavController) {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .border(1.dp, BorderLight, RoundedCornerShape(16.dp))
                             .clickable {
                                 navController.navigate("productDetail/${product.id}")
                             },
-                        shape = RoundedCornerShape(14.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         colors = CardDefaults.cardColors(containerColor = Color.White)
                     ) {
                         Column {
-                            // ── Product image ─────────────────────────
+                            // ── Product image ──────────────────────────────
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -184,33 +210,41 @@ fun HomeScreen(navController: NavController) {
                                     contentScale = ContentScale.Crop,
                                     modifier = Modifier
                                         .fillMaxSize()
-                                        .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                                        .clip(
+                                            RoundedCornerShape(
+                                                topStart = 16.dp,
+                                                topEnd = 16.dp
+                                            )
+                                        )
                                 )
                             }
 
-                            // ── Product info ──────────────────────────
+                            // ── Product info ───────────────────────────────
                             Column(
                                 modifier = Modifier.padding(
-                                    horizontal = 10.dp,
-                                    vertical = 8.dp
-                                )
+                                    horizontal = 12.dp,
+                                    vertical = 10.dp
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(3.dp)
                             ) {
                                 Text(
                                     text = product.name ?: "No name",
-                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.SemiBold,
-                                    maxLines = 1
+                                    color = TextPrimary,
+                                    maxLines = 1,
+                                    letterSpacing = (-0.2).sp
                                 )
                                 Text(
                                     text = "Ksh ${product.price}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = mainBlue,
-                                    fontWeight = FontWeight.Bold
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = AccentBlue
                                 )
                                 Text(
                                     text = product.category ?: "",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = Color.Gray,
+                                    fontSize = 11.sp,
+                                    color = TextSecondary,
                                     maxLines = 1
                                 )
                             }

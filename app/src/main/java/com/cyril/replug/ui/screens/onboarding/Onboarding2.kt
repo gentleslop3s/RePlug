@@ -1,24 +1,20 @@
 package com.cyril.replug.ui.screens.onboarding
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ArrowForwardIos
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.paint
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,62 +25,145 @@ import androidx.navigation.compose.rememberNavController
 import com.cyril.replug.R
 import com.cyril.replug.navigation.ROUTE_ONBOARDING3
 import com.cyril.replug.navigation.ROUTE_REGISTER
-import com.cyril.replug.ui.theme.mainBlue
+
+private val SurfaceDark       = Color(0xFF0F1923)
+private val PageBg            = Color(0xFFF0F2F5)
+private val BorderLight       = Color(0xFFE2E6EC)
+private val TextPrimary       = Color(0xFF111827)
+private val TextSecondary     = Color(0xFF6B7280)
+private val AccentBlue        = Color(0xFF1A6BF5)
+private val AccentBlueSurface = Color(0xFFEFF4FF)
 
 @Composable
-fun Onboarding2Screen(navController: NavController){
+fun Onboarding2Screen(navController: NavController) {
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .paint(painterResource(R.drawable.replugbgimg), contentScale = ContentScale.FillBounds),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .background(PageBg)
     ) {
-        Image(
-            painter = painterResource(R.drawable.sellorbuy),
-            contentDescription = "sellorbuy",
-            modifier = Modifier.size(350.dp)
-        )
-        Spacer(modifier = Modifier.height(40.dp))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 28.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
 
-        Text(
-            text = "List or Discover Devices",
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold,
-            fontFamily = FontFamily.SansSerif,
-            color = mainBlue
-        )
+            // ── Illustration badge ────────────────────────────────────────────
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(RoundedCornerShape(40.dp))
+                    .background(AccentBlueSurface)
+                    .border(1.dp, BorderLight, RoundedCornerShape(40.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter            = painterResource(R.drawable.sellorbuy),
+                    contentDescription = "Sell or Buy",
+                    modifier           = Modifier.size(130.dp)
+                )
+            }
 
-        Text(
-            text = "Post items or browse deals near you.",
-            fontSize = 15.sp,
-            textAlign = TextAlign.Center,
+            Spacer(Modifier.height(40.dp))
 
+            // ── Dot indicators (page 2 of 3 active) ──────────────────────────
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment     = Alignment.CenterVertically
+            ) {
+                // Inactive
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(BorderLight)
+                )
+                // Active
+                Box(
+                    modifier = Modifier
+                        .height(8.dp)
+                        .width(28.dp)
+                        .clip(CircleShape)
+                        .background(AccentBlue)
+                )
+                // Inactive
+                Box(
+                    modifier = Modifier
+                        .size(8.dp)
+                        .clip(CircleShape)
+                        .background(BorderLight)
+                )
+            }
+
+            Spacer(Modifier.height(32.dp))
+
+            // ── Heading ───────────────────────────────────────────────────────
+            Text(
+                text          = "List or Discover Devices",
+                fontSize      = 26.sp,
+                fontWeight    = FontWeight.Bold,
+                color         = TextPrimary,
+                textAlign     = TextAlign.Center,
+                letterSpacing = (-0.5).sp,
+                lineHeight    = 32.sp
             )
 
-        Spacer(modifier = Modifier.height(20.dp))
+            Spacer(Modifier.height(10.dp))
 
-        Button(
-            onClick = {
-                navController.navigate(ROUTE_ONBOARDING3) },
-            colors = ButtonDefaults.buttonColors(mainBlue),
-            shape = RoundedCornerShape(15.dp),
-            modifier = Modifier.width(280.dp)
-        ) {
-            Text(text = "next")
+            Text(
+                text       = "Post items or browse deals near you.",
+                fontSize   = 15.sp,
+                color      = TextSecondary,
+                textAlign  = TextAlign.Center,
+                lineHeight = 22.sp
+            )
+
+            Spacer(Modifier.height(48.dp))
+
+            // ── Primary button ────────────────────────────────────────────────
+            Button(
+                onClick  = { navController.navigate(ROUTE_ONBOARDING3) },
+                shape    = RoundedCornerShape(14.dp),
+                colors   = ButtonDefaults.buttonColors(
+                    containerColor = SurfaceDark,
+                    contentColor   = Color.White
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp)
+            ) {
+                Text(
+                    "Next",
+                    fontSize   = 15.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Spacer(Modifier.width(8.dp))
+                Icon(
+                    Icons.Rounded.ArrowForwardIos,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // ── Skip ──────────────────────────────────────────────────────────
+            TextButton(
+                onClick        = { navController.navigate(ROUTE_REGISTER) },
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text(
+                    "Skip for now",
+                    fontSize = 14.sp,
+                    color    = TextSecondary
+                )
+            }
         }
-
-
     }
-
-
-
 }
 
 @Preview(showBackground = true)
 @Composable
-fun Onboarding2Preview(){
-
-    Onboarding2Screen(rememberNavController())
-}
+fun OnboardingScreen2Preview() = Onboarding2Screen(rememberNavController())

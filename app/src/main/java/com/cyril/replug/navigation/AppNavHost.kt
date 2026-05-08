@@ -105,6 +105,7 @@ fun AppNavHost(
 
             ProductDetailScreen(
                 productId = productId,
+                navController = navController,
                 onBuyClick = {
                     navController.navigate("payment/$productId")
                 }
@@ -115,6 +116,7 @@ fun AppNavHost(
 
             PaymentScreen(
                 productId = productId,
+                navController = navController,
                 onPaymentDone = {
                     navController.popBackStack()
                 }
