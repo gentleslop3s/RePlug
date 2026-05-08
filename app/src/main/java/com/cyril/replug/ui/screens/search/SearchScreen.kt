@@ -93,14 +93,21 @@ fun SearchScreen(navController: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { navController.navigate(ROUTE_WISHLIST) }) {
+                        Icon(
+                            Icons.Rounded.Favorite,
+                            contentDescription = "Wishlist",
+                            tint = TextSecondary
+                        )
+                    }
+                    IconButton(onClick = {navController.navigate(ROUTE_ORDERS) }) {
                         Icon(
                             Icons.Rounded.ShoppingCart,
                             contentDescription = "Cart",
                             tint = TextSecondary
                         )
                     }
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = {navController.navigate(ROUTE_NOTIFICATION) }) {
                         Icon(
                             Icons.Rounded.Notifications,
                             contentDescription = "Notifications",
@@ -138,7 +145,7 @@ fun SearchScreen(navController: NavController) {
                     NavItem("Home",     Icons.Rounded.Home,           ROUTE_HOME,     0),
                     NavItem("Search",   Icons.Rounded.Search,         ROUTE_SEARCH,   1),
                     NavItem("Add",      Icons.Rounded.Add,            ROUTE_ADD,      2),
-                    NavItem("Wishlist", Icons.Rounded.FavoriteBorder, ROUTE_WISHLIST, 3),
+                    NavItem("Inbox",    Icons.Rounded.Inbox,          ROUTE_CHAT_INBOX, 3),
                     NavItem("Profile",  Icons.Rounded.Person,         ROUTE_PROFILE,  4),
                 )
 
@@ -322,8 +329,7 @@ fun SearchProductCard(
     Card(
         modifier  = Modifier
             .fillMaxWidth()
-            .border(1.dp, BorderLight, RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
+            .border(1.dp, BorderLight, RoundedCornerShape(16.dp)),
         shape     = RoundedCornerShape(16.dp),
         colors    = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -343,41 +349,7 @@ fun SearchProductCard(
                 )
 
                 // ── Tag badge ─────────────────────────────────────────────────
-                Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopStart)
-                        .background(tagSurface, RoundedCornerShape(6.dp))
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(
-                        text       = product.tag,
-                        fontSize   = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color      = tagColor
-                    )
-                }
 
-                // ── Wishlist toggle ───────────────────────────────────────────
-                Box(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .align(Alignment.TopEnd)
-                        .size(30.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.9f))
-                        .clickable { wishlisted = !wishlisted },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector        = if (wishlisted) Icons.Rounded.Favorite
-                        else Icons.Rounded.FavoriteBorder,
-                        contentDescription = "Wishlist",
-                        tint               = if (wishlisted) Color(0xFFEF4444)
-                        else TextSecondary,
-                        modifier           = Modifier.size(16.dp)
-                    )
-                }
             }
 
             Spacer(Modifier.height(10.dp))

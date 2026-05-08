@@ -52,7 +52,7 @@ fun Onboarding3Screen(navController: NavController) {
             // ── Illustration badge ────────────────────────────────────────────
             Box(
                 modifier = Modifier
-                    .size(200.dp)
+                    .size(400.dp)
                     .clip(RoundedCornerShape(40.dp))
                     .background(AccentGreenSurface)
                     .border(1.dp, BorderLight, RoundedCornerShape(40.dp)),
@@ -61,7 +61,7 @@ fun Onboarding3Screen(navController: NavController) {
                 Image(
                     painter            = painterResource(R.drawable.recycle),
                     contentDescription = "Recycle",
-                    modifier           = Modifier.size(130.dp)
+                    modifier           = Modifier.size(300.dp)
                 )
             }
 
@@ -142,18 +142,6 @@ fun Onboarding3Screen(navController: NavController) {
             }
 
             Spacer(Modifier.height(16.dp))
-
-            // ── Already have account ──────────────────────────────────────────
-            TextButton(
-                onClick        = { navController.navigate(ROUTE_REGISTER) },
-                contentPadding = PaddingValues(0.dp)
-            ) {
-                Text(
-                    "Already have an account? Sign in",
-                    fontSize = 14.sp,
-                    color    = TextSecondary
-                )
-            }
         }
     }
 }

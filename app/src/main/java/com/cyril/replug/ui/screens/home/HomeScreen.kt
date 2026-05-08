@@ -73,14 +73,21 @@ fun HomeScreen(navController: NavController) {
                     )
                 },
                 actions = {
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { navController.navigate(ROUTE_WISHLIST) }) {
+                        Icon(
+                            Icons.Rounded.Favorite,
+                            contentDescription = "Wishlist",
+                            tint = TextSecondary
+                        )
+                    }
+                    IconButton(onClick = { navController.navigate(ROUTE_ORDERS) }) {
                         Icon(
                             Icons.Rounded.ShoppingCart,
                             contentDescription = "Cart",
                             tint = TextSecondary
                         )
                     }
-                    IconButton(onClick = { }) {
+                    IconButton(onClick = { navController.navigate(ROUTE_NOTIFICATION)}) {
                         Icon(
                             Icons.Rounded.Notifications,
                             contentDescription = "Notifications",
@@ -118,7 +125,7 @@ fun HomeScreen(navController: NavController) {
                     NavItem("Home",     Icons.Rounded.Home,           ROUTE_HOME,     0),
                     NavItem("Search",   Icons.Rounded.Search,         ROUTE_SEARCH,   1),
                     NavItem("Add",      Icons.Rounded.Add,            ROUTE_ADD,      2),
-                    NavItem("Wishlist", Icons.Rounded.FavoriteBorder, ROUTE_WISHLIST, 3),
+                    NavItem("Inbox",    Icons.Rounded.Inbox,          ROUTE_CHAT_INBOX, 3),
                     NavItem("Profile",  Icons.Rounded.Person,         ROUTE_PROFILE,  4),
                 )
 

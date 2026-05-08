@@ -99,7 +99,7 @@ fun SplashScreen(navController: NavController) {
                 Image(
                     painter            = painterResource(R.drawable.repluglogo),
                     contentDescription = "RePlug",
-                    modifier           = Modifier.size(80.dp)
+                    modifier           = Modifier.size(200.dp)
                 )
             }
 
@@ -108,13 +108,7 @@ fun SplashScreen(navController: NavController) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                Text(
-                    text          = "RePlug",
-                    fontSize      = 28.sp,
-                    fontWeight    = FontWeight.Bold,
-                    color         = SurfaceDark,
-                    letterSpacing = (-0.5).sp
-                )
+
                 Text(
                     text     = "Your gadget marketplace",
                     fontSize = 14.sp,

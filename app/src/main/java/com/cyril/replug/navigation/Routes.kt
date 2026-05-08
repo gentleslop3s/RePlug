@@ -17,6 +17,11 @@ const val ROUTE_EPROFILE = "eprofile"
 const val ROUTE_RECYCLE = "recycle"
 const val ROUTE_ADD = "add"
 const val ROUTE_SELL = "sell"
+const val ROUTE_CONTACT = "contact"
+const val ROUTE_ORDERS = "orders"
+const val ROUTE_NOTIFICATION = "notification"
+const val ROUTE_RECYCLED_PRODUCTS = "recycledproducts"
 const val ROUTE_PRODUCT_DETAIL = "productdetail"
+const val ROUTE_CHAT_INBOX = "chatInbox"
 
 

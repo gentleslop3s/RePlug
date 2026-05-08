@@ -24,9 +24,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.cyril.replug.models.Product
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 
-// ─── Colour tokens (shared) ───────────────────────────────────────────────────
+// ─── Colour tokens ────────────────────────────────────────────────────────────
 private val SurfaceDark       = Color(0xFF0F1923)
 private val PageBg            = Color(0xFFF0F2F5)
 private val BorderLight       = Color(0xFFE2E6EC)
@@ -38,13 +39,13 @@ private val AccentBlueSurface = Color(0xFFEFF4FF)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
-    productId: String,
+    productId    : String,
     navController: NavController,
-    onBuyClick: (Product) -> Unit = {}
+    onBuyClick   : (Product) -> Unit = {}
 ) {
-    val context   = LocalContext.current
-    var product   by remember { mutableStateOf<Product?>(null) }
-    var isLoading by remember { mutableStateOf(true) }
+    val context    = LocalContext.current
+    var product    by remember { mutableStateOf<Product?>(null) }
+    var isLoading  by remember { mutableStateOf(true) }
     var wishlisted by remember { mutableStateOf(false) }
 
     LaunchedEffect(productId) {
@@ -105,7 +106,6 @@ fun ProductDetailScreen(
                     }
                 },
                 actions = {
-                    // Wishlist toggle in top bar
                     IconButton(onClick = { wishlisted = !wishlisted }) {
                         Box(
                             modifier = Modifier
@@ -116,7 +116,7 @@ fun ProductDetailScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = if (wishlisted) Icons.Rounded.Favorite
+                                imageVector        = if (wishlisted) Icons.Rounded.Favorite
                                 else Icons.Rounded.FavoriteBorder,
                                 contentDescription = "Wishlist",
                                 tint     = if (wishlisted) Color(0xFFEF4444) else TextSecondary,
@@ -142,51 +142,94 @@ fun ProductDetailScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PageBg
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PageBg)
             )
         },
 
-        // ── Bottom bar with Buy button ────────────────────────────────────────
+        // ── Bottom bar ────────────────────────────────────────────────────────
         bottomBar = {
             Surface(
-                color       = Color.White,
+                color          = Color.White,
                 tonalElevation = 0.dp,
-                modifier    = Modifier.border(
-                    width = 1.dp,
-                    color = BorderLight,
-                    shape = RoundedCornerShape(0.dp)
-                )
+                modifier       = Modifier.border(1.dp, BorderLight, RoundedCornerShape(0.dp))
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp, vertical = 14.dp),
                     verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    // Price summary
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            "Total price",
-                            fontSize = 12.sp,
-                            color    = TextSecondary
+                    // ── Message Seller button ─────────────────────────────────
+                    OutlinedButton(
+                        onClick = {
+                            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+                            if (currentUserId == null) {
+                                Toast.makeText(context, "Please log in to message the seller", Toast.LENGTH_SHORT).show()
+                                return@OutlinedButton
+                            }
+
+                            val sellerId = product!!.sellerId
+
+                            if (sellerId.isNullOrEmpty()) {
+                                Toast.makeText(context, "Seller info unavailable for this listing", Toast.LENGTH_SHORT).show()
+                                return@OutlinedButton
+                            }
+
+                            if (currentUserId == sellerId) {
+                                Toast.makeText(context, "This is your own listing", Toast.LENGTH_SHORT).show()
+                                return@OutlinedButton
+                            }
+
+                            val chatId = listOf(currentUserId, sellerId, productId)
+                                .sorted()
+                                .joinToString("_")
+
+                            val metaRef = FirebaseDatabase.getInstance()
+                                .getReference("Chats/$chatId/metadata")
+
+                            metaRef.get()
+                                .addOnSuccessListener { snap ->
+                                    if (!snap.exists()) {
+                                        metaRef.setValue(mapOf(
+                                            "buyerId"       to currentUserId,
+                                            "sellerId"      to sellerId,
+                                            "productId"     to productId,
+                                            "productName"   to (product!!.name ?: ""),
+                                            "lastMessage"   to "",
+                                            "lastTimestamp" to System.currentTimeMillis()
+                                        ))
+                                    }
+                                    navController.navigate("chat/$chatId/${product!!.name ?: "Product"}")
+                                }
+                                .addOnFailureListener {
+                                    Toast.makeText(context, "Could not open chat. Try again.", Toast.LENGTH_SHORT).show()
+                                }
+                        },
+                        shape  = RoundedCornerShape(14.dp),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, BorderLight),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = TextPrimary
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(50.dp)
+                    ) {
+                        Icon(
+                            Icons.Rounded.ChatBubbleOutline,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
                         )
-                        Text(
-                            "Ksh ${product!!.price}",
-                            fontSize   = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color      = TextPrimary,
-                            letterSpacing = (-0.3).sp
-                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text("Message", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
                     }
 
-                    // Buy Now button
+                    // ── Buy Now button ────────────────────────────────────────
                     Button(
-                        onClick = { onBuyClick(product!!) },
-                        shape   = RoundedCornerShape(14.dp),
-                        colors  = ButtonDefaults.buttonColors(
+                        onClick  = { onBuyClick(product!!) },
+                        shape    = RoundedCornerShape(14.dp),
+                        colors   = ButtonDefaults.buttonColors(
                             containerColor = SurfaceDark,
                             contentColor   = Color.White
                         ),
@@ -200,11 +243,7 @@ fun ProductDetailScreen(
                             modifier = Modifier.size(16.dp)
                         )
                         Spacer(Modifier.width(8.dp))
-                        Text(
-                            "Buy Now",
-                            fontSize   = 15.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
+                        Text("Buy Now", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -268,7 +307,7 @@ fun ProductDetailScreen(
 
                 // Brand row
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment     = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
                     Icon(
@@ -314,7 +353,7 @@ fun ProductDetailScreen(
 
                 Spacer(Modifier.height(20.dp))
 
-                // Specs row — Category + Brand chips
+                // Specs row
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     SpecChip(label = "Category", value = product!!.category ?: "N/A")
                     SpecChip(label = "Brand",    value = product!!.brand    ?: "N/A")

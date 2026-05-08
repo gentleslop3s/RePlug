@@ -53,7 +53,7 @@ fun Onboarding2Screen(navController: NavController) {
             // ── Illustration badge ────────────────────────────────────────────
             Box(
                 modifier = Modifier
-                    .size(200.dp)
+                    .size(400.dp)
                     .clip(RoundedCornerShape(40.dp))
                     .background(AccentBlueSurface)
                     .border(1.dp, BorderLight, RoundedCornerShape(40.dp)),
@@ -62,7 +62,7 @@ fun Onboarding2Screen(navController: NavController) {
                 Image(
                     painter            = painterResource(R.drawable.sellorbuy),
                     contentDescription = "Sell or Buy",
-                    modifier           = Modifier.size(130.dp)
+                    modifier           = Modifier.size(300.dp)
                 )
             }
 

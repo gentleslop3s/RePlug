@@ -113,7 +113,7 @@ fun ProfileScreen(navController: NavController) {
                     NavItem("Home",     Icons.Rounded.Home,            ROUTE_HOME,    0),
                     NavItem("Search",   Icons.Rounded.Search,          ROUTE_SEARCH,  1),
                     NavItem("Add",      Icons.Rounded.Add,             ROUTE_ADD,     2),
-                    NavItem("Wishlist", Icons.Rounded.FavoriteBorder,  ROUTE_WISHLIST,3),
+                    NavItem("Inbox",    Icons.Rounded.Inbox,          ROUTE_CHAT_INBOX, 3),
                     NavItem("Profile",  Icons.Rounded.Person,          ROUTE_PROFILE, 4),
                 )
                 items.forEach { item ->
@@ -311,12 +311,46 @@ fun ProfileScreen(navController: NavController) {
                 HorizontalDivider(color = BorderLight, thickness = 0.5.dp)
                 ProfileActionRow(
                     icon  = Icons.Rounded.Notifications,
-                    label = "Notifications"
+                    label = "Notifications",
+                    onClick = { navController.navigate(ROUTE_NOTIFICATION) }
                 )
                 HorizontalDivider(color = BorderLight, thickness = 0.5.dp)
                 ProfileActionRow(
                     icon  = Icons.Rounded.Lock,
                     label = "Privacy & security"
+                )
+            }
+
+            ProfileSectionCard {
+                ProfileSectionLabel("My History")
+                Spacer(Modifier.height(4.dp))
+
+                ProfileActionRow(
+                    icon  = Icons.Rounded.Receipt,
+                    label = "My Order History",
+                    onClick = { navController.navigate(ROUTE_ORDERS) }
+                )
+                HorizontalDivider(color = BorderLight, thickness = 0.5.dp)
+                ProfileActionRow(
+                    icon  = Icons.Rounded.Recycling,
+                    label = "My Recycled History",
+                    onClick = { navController.navigate(ROUTE_RECYCLED_PRODUCTS) }
+                )
+            }
+            ProfileSectionCard {
+                ProfileSectionLabel("More")
+                Spacer(Modifier.height(4.dp))
+
+                ProfileActionRow(
+                    icon  = Icons.Rounded.Info,
+                    label = "About Us",
+                    onClick = { navController.navigate(ROUTE_ABOUT) }
+                )
+                HorizontalDivider(color = BorderLight, thickness = 0.5.dp)
+                ProfileActionRow(
+                    icon  = Icons.Rounded.Call,
+                    label = "Contact Us",
+                    onClick = { navController.navigate(ROUTE_CONTACT) }
                 )
             }
 

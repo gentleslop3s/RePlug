@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavController
 import com.cyril.replug.models.Product
 import com.cyril.replug.navigation.ROUTE_SEARCH
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,9 +24,7 @@ import org.json.JSONObject
 
 class ProductViewModel : ViewModel() {
 
-    // ── Cloudinary config ──────────────────────────────────────────────────────
-    // Replace these with your actual Cloudinary values from the dashboard
-    private val CLOUD_NAME = "dcmvkp3hl"
+    private val CLOUD_NAME    = "dcmvkp3hl"
     private val UPLOAD_PRESET = "replug_upload"
 
     private val _products = mutableStateListOf<Product>()
@@ -33,13 +32,13 @@ class ProductViewModel : ViewModel() {
 
     // 🔥 UPLOAD PRODUCT
     fun uploadProduct(
-        imageUri: Uri?,
-        name: String,
-        category: String,
-        brand: String,
-        price: String,
-        description: String,
-        context: Context,
+        imageUri     : Uri?,
+        name         : String,
+        category     : String,
+        brand        : String,
+        price        : String,
+        description  : String,
+        context      : Context,
         navController: NavController
     ) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -51,8 +50,10 @@ class ProductViewModel : ViewModel() {
                     return@launch
                 }
 
-                // ✅ Upload image to Cloudinary (free, no Firebase Storage needed)
                 val imageUrl = uploadImageToCloudinary(imageUri, context)
+
+                // ── Get current logged-in seller's ID ─────────────────────────
+                val sellerId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
 
                 val ref = FirebaseDatabase.getInstance()
                     .getReference("Products")
@@ -65,7 +66,8 @@ class ProductViewModel : ViewModel() {
                     "brand"       to brand,
                     "price"       to price,
                     "description" to description,
-                    "imageUrl"    to imageUrl   // Cloudinary secure URL
+                    "imageUrl"    to imageUrl,
+                    "sellerId"    to sellerId        // ← now saved to Firebase
                 )
 
                 ref.setValue(productData).await()
@@ -78,14 +80,13 @@ class ProductViewModel : ViewModel() {
             } catch (e: Exception) {
                 e.printStackTrace()
                 withContext(Dispatchers.Main) {
-                    // Shows the real error so you can debug easily
                     Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
     }
 
-    // ☁️ CLOUDINARY IMAGE UPLOAD (replaces Firebase Storage)
+    // ☁️ CLOUDINARY IMAGE UPLOAD
     private suspend fun uploadImageToCloudinary(uri: Uri, context: Context): String {
         return withContext(Dispatchers.IO) {
             val inputStream = context.contentResolver.openInputStream(uri)
@@ -111,7 +112,7 @@ class ProductViewModel : ViewModel() {
                 .post(requestBody)
                 .build()
 
-            val response = client.newCall(request).execute()
+            val response     = client.newCall(request).execute()
             val responseBody = response.body?.string()
                 ?: throw Exception("Empty response from Cloudinary")
 
@@ -119,7 +120,6 @@ class ProductViewModel : ViewModel() {
                 throw Exception("Cloudinary upload failed: $responseBody")
             }
 
-            // Parse and return the hosted image URL
             JSONObject(responseBody).getString("secure_url")
         }
     }
@@ -129,7 +129,6 @@ class ProductViewModel : ViewModel() {
         val ref = FirebaseDatabase.getInstance().getReference("Products")
 
         ref.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
-
             override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
                 _products.clear()
                 for (child in snapshot.children) {
@@ -140,7 +139,6 @@ class ProductViewModel : ViewModel() {
                     }
                 }
             }
-
             override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
                 Toast.makeText(context, "Failed to load products", Toast.LENGTH_LONG).show()
             }
@@ -164,14 +162,14 @@ class ProductViewModel : ViewModel() {
 
     // 🔥 UPDATE PRODUCT
     fun updateProduct(
-        productId: String,
-        imageUri: Uri?,
-        name: String,
-        category: String,
-        brand: String,
-        price: String,
-        description: String,
-        context: Context,
+        productId    : String,
+        imageUri     : Uri?,
+        name         : String,
+        category     : String,
+        brand        : String,
+        price        : String,
+        description  : String,
+        context      : Context,
         navController: NavController
     ) {
         viewModelScope.launch(Dispatchers.IO) {
@@ -185,7 +183,6 @@ class ProductViewModel : ViewModel() {
                     "description" to description
                 )
 
-                // ✅ Only re-upload if user picked a new image
                 if (imageUri != null) {
                     val imageUrl = uploadImageToCloudinary(imageUri, context)
                     updateMap["imageUrl"] = imageUrl

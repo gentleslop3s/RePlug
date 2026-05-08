@@ -19,14 +19,20 @@ import com.cyril.replug.ui.screens.add.RecycleScreen
 import com.cyril.replug.ui.screens.add.SellScreen
 import com.cyril.replug.ui.screens.auth.LoginScreen
 import com.cyril.replug.ui.screens.auth.RegisterScreen
+import com.cyril.replug.ui.screens.chat.ChatInboxScreen
+import com.cyril.replug.ui.screens.chat.ChatScreen
 import com.cyril.replug.ui.screens.home.HomeScreen
+import com.cyril.replug.ui.screens.notifications.NotificationScreen
 import com.cyril.replug.ui.screens.onboarding.Onboarding1Screen
 import com.cyril.replug.ui.screens.onboarding.Onboarding2Screen
 import com.cyril.replug.ui.screens.onboarding.Onboarding3Screen
 import com.cyril.replug.ui.screens.payment.PaymentScreen
+import com.cyril.replug.ui.screens.products.OrdersScreen
 import com.cyril.replug.ui.screens.products.ProductDetailScreen
+import com.cyril.replug.ui.screens.profile.ContactScreen
 import com.cyril.replug.ui.screens.profile.EditProfileScreen
 import com.cyril.replug.ui.screens.profile.ProfileScreen
+import com.cyril.replug.ui.screens.profile.RecycledProductsScreen
 import com.cyril.replug.ui.screens.scaffold.ScaffoldScreen
 import com.cyril.replug.ui.screens.search.SearchScreen
 import com.cyril.replug.ui.screens.splash.SplashScreen
@@ -99,6 +105,28 @@ fun AppNavHost(
         }
         composable(ROUTE_SELL) {
             SellScreen(navController)
+        }
+        composable(ROUTE_CONTACT) {
+            ContactScreen(navController)
+        }
+        composable(ROUTE_ORDERS) {
+            OrdersScreen(navController)
+        }
+        composable(ROUTE_NOTIFICATION) {
+            NotificationScreen(navController)
+        }
+        composable(ROUTE_RECYCLED_PRODUCTS) {
+            RecycledProductsScreen(navController)
+        }
+        composable(ROUTE_CHAT_INBOX) {
+            ChatInboxScreen(navController)
+        }
+        composable("chat/{chatId}/{productName}") { backStackEntry ->
+            ChatScreen(
+                chatId       = backStackEntry.arguments?.getString("chatId") ?: "",
+                productName  = backStackEntry.arguments?.getString("productName") ?: "",
+                navController = navController
+            )
         }
         composable("productDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId") ?: ""
