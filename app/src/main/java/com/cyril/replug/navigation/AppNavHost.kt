@@ -30,7 +30,9 @@ import com.cyril.replug.ui.screens.payment.PaymentScreen
 import com.cyril.replug.ui.screens.products.OrdersScreen
 import com.cyril.replug.ui.screens.products.ProductDetailScreen
 import com.cyril.replug.ui.screens.profile.ContactScreen
+import com.cyril.replug.ui.screens.profile.EditProductScreen
 import com.cyril.replug.ui.screens.profile.EditProfileScreen
+import com.cyril.replug.ui.screens.profile.MyListingsScreen
 import com.cyril.replug.ui.screens.profile.ProfileScreen
 import com.cyril.replug.ui.screens.profile.RecycledProductsScreen
 import com.cyril.replug.ui.screens.scaffold.ScaffoldScreen
@@ -120,6 +122,13 @@ fun AppNavHost(
         }
         composable(ROUTE_CHAT_INBOX) {
             ChatInboxScreen(navController)
+        }
+        composable(ROUTE_MY_LISTINGS) {
+            MyListingsScreen(navController)
+        }
+        composable("editProduct/{productId}") { backStackEntry ->
+            val productId = backStackEntry.arguments?.getString("productId")
+            EditProductScreen(navController = navController, productId = productId)
         }
         composable("chat/{chatId}/{productName}") { backStackEntry ->
             ChatScreen(

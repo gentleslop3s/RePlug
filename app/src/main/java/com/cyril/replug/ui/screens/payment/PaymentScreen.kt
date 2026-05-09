@@ -5,8 +5,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
@@ -14,38 +16,41 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.cyril.replug.models.Product
 import com.google.firebase.database.FirebaseDatabase
 
-// ─── Colour tokens (shared) ───────────────────────────────────────────────────
-private val SurfaceDark       = Color(0xFF0F1923)
-private val PageBg            = Color(0xFFF0F2F5)
-private val BorderLight       = Color(0xFFE2E6EC)
-private val TextPrimary       = Color(0xFF111827)
-private val TextSecondary     = Color(0xFF6B7280)
-private val AccentBlue        = Color(0xFF1A6BF5)
-private val AccentBlueSurface = Color(0xFFEFF4FF)
-private val AccentGreen       = Color(0xFF16A34A)
-private val AccentGreenSurface= Color(0xFFDCFCE7)
+// ─── Colour tokens ────────────────────────────────────────────────────────────
+private val SurfaceDark        = Color(0xFF0F1923)
+private val PageBg             = Color(0xFFF0F2F5)
+private val BorderLight        = Color(0xFFE2E6EC)
+private val TextPrimary        = Color(0xFF111827)
+private val TextSecondary      = Color(0xFF6B7280)
+private val AccentBlue         = Color(0xFF1A6BF5)
+private val AccentBlueSurface  = Color(0xFFEFF4FF)
+private val AccentGreen        = Color(0xFF16A34A)
+private val AccentGreenSurface = Color(0xFFDCFCE7)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentScreen(
-    productId: String,
+    productId    : String,
     navController: NavController,
     onPaymentDone: () -> Unit = {}
 ) {
-    val context         = LocalContext.current
-    var product         by remember { mutableStateOf<Product?>(null) }
-    var selectedMethod  by remember { mutableStateOf("") }
-    var loading         by remember { mutableStateOf(true) }
-    var isProcessing    by remember { mutableStateOf(false) }
+    val context        = LocalContext.current
+    var product        by remember { mutableStateOf<Product?>(null) }
+    var selectedMethod by remember { mutableStateOf("") }
+    var loading        by remember { mutableStateOf(true) }
+    var isProcessing   by remember { mutableStateOf(false) }
 
     LaunchedEffect(productId) {
         FirebaseDatabase.getInstance()
@@ -81,7 +86,7 @@ fun PaymentScreen(
     Scaffold(
         containerColor = PageBg,
 
-        // ── Top bar ───────────────────────────────────────────────────────────
+        // ── Top bar ──────────────────────────────────────────────────────────
         topBar = {
             TopAppBar(
                 title = {
@@ -112,9 +117,7 @@ fun PaymentScreen(
                         }
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = PageBg
-                )
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = PageBg)
             )
         },
 
@@ -136,10 +139,10 @@ fun PaymentScreen(
                         Text("Total", fontSize = 12.sp, color = TextSecondary)
                         Text(
                             "Ksh ${product!!.price}",
-                            fontSize      = 18.sp,
+                            fontSize      = 20.sp,
                             fontWeight    = FontWeight.Bold,
                             color         = TextPrimary,
-                            letterSpacing = (-0.3).sp
+                            letterSpacing = (-0.4).sp
                         )
                     }
 
@@ -150,20 +153,20 @@ fun PaymentScreen(
                                 return@Button
                             }
                             isProcessing = true
-                            val orderRef = FirebaseDatabase.getInstance()
-                                .getReference("Orders").push()
+                            val orderRef  = FirebaseDatabase.getInstance().getReference("Orders").push()
                             val orderData = mapOf(
                                 "orderId"       to orderRef.key,
                                 "productId"     to productId,
-                                "productName"   to product!!.name,
-                                "price"         to product!!.price,
+                                "productName"   to (product!!.name ?: ""),
+                                "price"         to (product!!.price ?: ""),
                                 "paymentMethod" to selectedMethod,
-                                "status"        to "Pending"
+                                "status"        to "Pending",
+                                "imageUrl"      to (product!!.imageUrl ?: "")  // ← saved for OrdersScreen
                             )
                             orderRef.setValue(orderData)
                                 .addOnSuccessListener {
                                     isProcessing = false
-                                    Toast.makeText(context, "Order placed!", Toast.LENGTH_SHORT).show()
+                                    Toast.makeText(context, "Order placed! 🎉", Toast.LENGTH_SHORT).show()
                                     onPaymentDone()
                                 }
                                 .addOnFailureListener {
@@ -174,25 +177,20 @@ fun PaymentScreen(
                         enabled  = !isProcessing,
                         shape    = RoundedCornerShape(14.dp),
                         colors   = ButtonDefaults.buttonColors(
-                            containerColor = SurfaceDark,
-                            contentColor   = Color.White
+                            containerColor         = SurfaceDark,
+                            contentColor           = Color.White,
+                            disabledContainerColor = SurfaceDark.copy(alpha = 0.5f)
                         ),
                         modifier = Modifier
                             .weight(1f)
-                            .height(50.dp)
+                            .height(52.dp)
                     ) {
                         if (isProcessing) {
-                            CircularProgressIndicator(
-                                color    = Color.White,
-                                modifier = Modifier.size(18.dp),
-                                strokeWidth = 2.dp
-                            )
+                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                         } else {
-                            Text(
-                                "Pay Now",
-                                fontSize   = 15.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Icon(Icons.Rounded.Lock, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Pay Now", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                         }
                     }
                 }
@@ -204,88 +202,174 @@ fun PaymentScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
 
-            Spacer(Modifier.height(4.dp))
-
-            // ── Order summary card ────────────────────────────────────────────
-            Column(
+            // ── Product image hero ────────────────────────────────────────────
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White)
-                    .border(1.dp, BorderLight, RoundedCornerShape(20.dp))
-                    .padding(20.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
+                    .height(220.dp)
             ) {
-                Text(
-                    "Order Summary",
-                    fontSize   = 15.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color      = TextPrimary
+                if (!product!!.imageUrl.isNullOrEmpty()) {
+                    AsyncImage(
+                        model              = product!!.imageUrl,
+                        contentDescription = "Product image",
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(listOf(Color(0xFFE8ECF4), Color(0xFFCDD5E8)))
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(Icons.Rounded.ImageNotSupported, contentDescription = null, tint = Color(0xFFB0BAD0), modifier = Modifier.size(48.dp))
+                    }
+                }
+
+                // Bottom scrim
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .align(Alignment.BottomStart)
+                        .background(
+                            Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f)))
+                        )
                 )
 
-                HorizontalDivider(color = BorderLight, thickness = 1.dp)
+                // Product name + category over image
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(18.dp)
+                ) {
+                    Text(
+                        text          = product!!.name ?: "—",
+                        fontSize      = 20.sp,
+                        fontWeight    = FontWeight.Bold,
+                        color         = Color.White,
+                        letterSpacing = (-0.4).sp
+                    )
+                    if (!product!!.brand.isNullOrEmpty()) {
+                        Text(
+                            text     = "${product!!.brand}  ·  ${product!!.category ?: ""}",
+                            fontSize = 13.sp,
+                            color    = Color.White.copy(alpha = 0.7f)
+                        )
+                    }
+                }
+            }
 
-                SummaryRow(label = "Product",  value = product!!.name  ?: "—")
-                SummaryRow(label = "Category", value = product!!.category ?: "—")
-                SummaryRow(label = "Brand",    value = product!!.brand ?: "—")
+            // ── Order summary card ────────────────────────────────────────────
+            CheckoutCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                CheckoutSectionLabel("Order summary")
+                Spacer(Modifier.height(12.dp))
 
-                HorizontalDivider(color = BorderLight, thickness = 1.dp)
+                SummaryRow(label = "Product",   value = product!!.name     ?: "—")
+                HorizontalDivider(color = BorderLight, thickness = 0.5.dp, modifier = Modifier.padding(vertical = 8.dp))
+                SummaryRow(label = "Category",  value = product!!.category ?: "—")
+                HorizontalDivider(color = BorderLight, thickness = 0.5.dp, modifier = Modifier.padding(vertical = 8.dp))
+                SummaryRow(label = "Brand",     value = product!!.brand    ?: "—")
+                HorizontalDivider(color = BorderLight, thickness = 1.dp, modifier = Modifier.padding(vertical = 10.dp))
 
+                // Total row
                 Row(
                     modifier              = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment     = Alignment.CenterVertically
                 ) {
-                    Text(
-                        "Total",
-                        fontSize   = 15.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color      = TextPrimary
-                    )
+                    Text("Total", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                     Text(
                         "Ksh ${product!!.price}",
-                        fontSize   = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color      = AccentBlue
+                        fontSize      = 18.sp,
+                        fontWeight    = FontWeight.Bold,
+                        color         = AccentBlue,
+                        letterSpacing = (-0.3).sp
                     )
                 }
             }
 
-            // ── Payment method heading ────────────────────────────────────────
-            Text(
-                "Payment Method",
-                fontSize   = 15.sp,
-                fontWeight = FontWeight.SemiBold,
-                color      = TextPrimary
-            )
+            // ── Payment method section ────────────────────────────────────────
+            CheckoutCard(modifier = Modifier.padding(horizontal = 16.dp)) {
+                CheckoutSectionLabel("Payment method")
+                Spacer(Modifier.height(12.dp))
 
-            // ── M-Pesa card ───────────────────────────────────────────────────
-            PaymentMethodCard(
-                emoji      = "📱",
-                title      = "M-Pesa",
-                subtitle   = "Pay via Safaricom M-Pesa",
-                isSelected = selectedMethod == "M-Pesa",
-                accentColor   = AccentGreen,
-                surfaceColor  = AccentGreenSurface,
-                onClick    = { selectedMethod = "M-Pesa" }
-            )
+                PaymentMethodCard(
+                    emoji        = "📱",
+                    title        = "M-Pesa",
+                    subtitle     = "Pay via Safaricom M-Pesa",
+                    isSelected   = selectedMethod == "M-Pesa",
+                    accentColor  = AccentGreen,
+                    surfaceColor = AccentGreenSurface,
+                    onClick      = { selectedMethod = "M-Pesa" }
+                )
+                Spacer(Modifier.height(10.dp))
+                PaymentMethodCard(
+                    emoji        = "💳",
+                    title        = "Visa / Card",
+                    subtitle     = "Pay with debit or credit card",
+                    isSelected   = selectedMethod == "Visa / Card",
+                    accentColor  = AccentBlue,
+                    surfaceColor = AccentBlueSurface,
+                    onClick      = { selectedMethod = "Visa / Card" }
+                )
+            }
 
-            // ── Visa / Card ───────────────────────────────────────────────────
-            PaymentMethodCard(
-                emoji      = "💳",
-                title      = "Visa / Card",
-                subtitle   = "Pay with debit or credit card",
-                isSelected = selectedMethod == "Visa / Card",
-                accentColor   = AccentBlue,
-                surfaceColor  = AccentBlueSurface,
-                onClick    = { selectedMethod = "Visa / Card" }
-            )
+            // ── Security note ─────────────────────────────────────────────────
+            Row(
+                modifier              = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp),
+                verticalAlignment     = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(Icons.Rounded.Lock, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(13.dp))
+                Spacer(Modifier.width(5.dp))
+                Text(
+                    "Payments are encrypted and secure",
+                    fontSize = 12.sp,
+                    color    = TextSecondary
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
         }
     }
+}
+
+// ─── Checkout card wrapper ────────────────────────────────────────────────────
+@Composable
+private fun CheckoutCard(
+    modifier: Modifier = Modifier,
+    content : @Composable ColumnScope.() -> Unit
+) {
+    Card(
+        modifier  = modifier.fillMaxWidth(),
+        shape     = RoundedCornerShape(20.dp),
+        colors    = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(0.dp),
+        border    = androidx.compose.foundation.BorderStroke(1.dp, BorderLight)
+    ) {
+        Column(modifier = Modifier.padding(18.dp), content = content)
+    }
+}
+
+// ─── Section label ────────────────────────────────────────────────────────────
+@Composable
+private fun CheckoutSectionLabel(text: String) {
+    Text(
+        text          = text.uppercase(),
+        fontSize      = 11.sp,
+        fontWeight    = FontWeight.Bold,
+        letterSpacing = 1.2.sp,
+        color         = TextSecondary
+    )
 }
 
 // ─── Summary row ──────────────────────────────────────────────────────────────
@@ -293,70 +377,58 @@ fun PaymentScreen(
 private fun SummaryRow(label: String, value: String) {
     Row(
         modifier              = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment     = Alignment.CenterVertically
     ) {
         Text(label, fontSize = 13.sp, color = TextSecondary)
         Text(value, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = TextPrimary)
     }
 }
 
-// ─── Payment method card (mirrors ActionCard from AddScreen) ──────────────────
+// ─── Payment method card ──────────────────────────────────────────────────────
 @Composable
 private fun PaymentMethodCard(
-    emoji: String,
-    title: String,
-    subtitle: String,
-    isSelected: Boolean,
-    accentColor: Color,
+    emoji       : String,
+    title       : String,
+    subtitle    : String,
+    isSelected  : Boolean,
+    accentColor : Color,
     surfaceColor: Color,
-    onClick: () -> Unit
+    onClick     : () -> Unit
 ) {
-    val borderColor = if (isSelected) accentColor else BorderLight
-    val borderWidth = if (isSelected) 2.dp else 1.dp
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.White)
-            .border(borderWidth, borderColor, RoundedCornerShape(20.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (isSelected) surfaceColor else Color(0xFFF7F8FA))
+            .border(
+                width = if (isSelected) 2.dp else 1.dp,
+                color = if (isSelected) accentColor else BorderLight,
+                shape = RoundedCornerShape(16.dp)
+            )
             .clickable(onClick = onClick)
-            .padding(18.dp),
+            .padding(14.dp),
         verticalAlignment     = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(14.dp)
     ) {
         // Emoji badge
         Box(
             modifier = Modifier
-                .size(52.dp)
+                .size(48.dp)
                 .clip(RoundedCornerShape(14.dp))
                 .background(surfaceColor),
             contentAlignment = Alignment.Center
         ) {
-            Text(emoji, fontSize = 24.sp)
+            Text(emoji, fontSize = 22.sp)
         }
 
         // Text
-        Column(
-            modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.spacedBy(3.dp)
-        ) {
-            Text(
-                title,
-                fontSize      = 15.sp,
-                fontWeight    = FontWeight.SemiBold,
-                color         = TextPrimary,
-                letterSpacing = (-0.2).sp
-            )
-            Text(
-                subtitle,
-                fontSize   = 13.sp,
-                color      = TextSecondary,
-                lineHeight = 18.sp
-            )
+        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title,    fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary, letterSpacing = (-0.2).sp)
+            Text(subtitle, fontSize = 12.sp, color = TextSecondary)
         }
 
-        // Selection indicator
+        // Radio indicator
         Box(
             modifier = Modifier
                 .size(22.dp)
@@ -365,12 +437,7 @@ private fun PaymentMethodCard(
             contentAlignment = Alignment.Center
         ) {
             if (isSelected) {
-                Icon(
-                    Icons.Rounded.Check,
-                    contentDescription = null,
-                    tint     = Color.White,
-                    modifier = Modifier.size(13.dp)
-                )
+                Icon(Icons.Rounded.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(13.dp))
             }
         }
     }

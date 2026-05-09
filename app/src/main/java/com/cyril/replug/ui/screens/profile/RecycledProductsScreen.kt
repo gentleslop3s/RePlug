@@ -17,6 +17,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -29,20 +30,21 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.google.firebase.database.*
 
-// ─── Colour tokens ────────────────────────────────────────────────────────────
+// ─── Colour tokens (matches MyListingsScreen exactly) ─────────────────────────
 private val SurfaceDark        = Color(0xFF0F1923)
 private val PageBg             = Color(0xFFF0F2F5)
 private val BorderLight        = Color(0xFFE2E6EC)
 private val TextPrimary        = Color(0xFF111827)
 private val TextSecondary      = Color(0xFF6B7280)
 private val AccentBlue         = Color(0xFF1A6BF5)
-private val AccentBlueSurface  = Color(0xFFEFF4FF)
 private val AccentGreen        = Color(0xFF16A34A)
 private val AccentGreenSurface = Color(0xFFDCFCE7)
 private val AccentAmber        = Color(0xFFD97706)
 private val AccentAmberSurface = Color(0xFFFEF3C7)
+private val AccentRed          = Color(0xFFDC2626)
+private val AccentRedSurface   = Color(0xFFFEF2F2)
 
-// ─── Data class (mirrors RecycleScreen's Firebase write) ─────────────────────
+// ─── Data class ───────────────────────────────────────────────────────────────
 data class RecycleRequest(
     val id               : String = "",
     val userId           : String = "",
@@ -60,7 +62,7 @@ fun RecycledProductsScreen(navController: NavController) {
     var requests  by remember { mutableStateOf<List<RecycleRequest>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // ── Real-time listener on /RecyclingRequests ─────────────────────────────
+    // ── Real-time listener ────────────────────────────────────────────────────
     DisposableEffect(Unit) {
         val ref      = FirebaseDatabase.getInstance().getReference("RecyclingRequests")
         val listener = object : ValueEventListener {
@@ -79,7 +81,7 @@ fun RecycledProductsScreen(navController: NavController) {
                         )
                     )
                 }
-                requests  = list.reversed()   // newest first
+                requests  = list.reversed()
                 isLoading = false
             }
             override fun onCancelled(error: DatabaseError) { isLoading = false }
@@ -91,7 +93,7 @@ fun RecycledProductsScreen(navController: NavController) {
     Scaffold(
         containerColor = PageBg,
 
-        // ── Top bar ──────────────────────────────────────────────────────────
+        // ── Top bar — identical pattern to MyListingsScreen ───────────────────
         topBar = {
             TopAppBar(
                 title = {
@@ -149,12 +151,12 @@ fun RecycledProductsScreen(navController: NavController) {
             // ── Loading ───────────────────────────────────────────────────────
             if (isLoading) {
                 CircularProgressIndicator(
-                    color    = AccentGreen,
+                    color    = AccentBlue,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }
 
-            // ── Empty state ───────────────────────────────────────────────────
+            // ── Empty state — mirrors MyListingsScreen empty state exactly ────
             else if (requests.isEmpty()) {
                 Column(
                     modifier = Modifier
@@ -166,10 +168,15 @@ fun RecycledProductsScreen(navController: NavController) {
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                            .background(AccentGreenSurface),
+                            .background(Color(0xFFEFF4FF)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("♻️", fontSize = 46.sp, textAlign = TextAlign.Center)
+                        Icon(
+                            Icons.Rounded.Recycling,
+                            contentDescription = null,
+                            tint     = AccentBlue,
+                            modifier = Modifier.size(48.dp)
+                        )
                     }
                     Spacer(Modifier.height(24.dp))
                     Text(
@@ -190,28 +197,28 @@ fun RecycledProductsScreen(navController: NavController) {
                     )
                     Spacer(Modifier.height(32.dp))
                     Button(
-                        onClick  = { navController.popBackStack() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape  = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = AccentGreen,
+                        onClick   = { navController.popBackStack() },
+                        modifier  = Modifier.fillMaxWidth().height(52.dp),
+                        shape     = RoundedCornerShape(14.dp),
+                        colors    = ButtonDefaults.buttonColors(
+                            containerColor = SurfaceDark,
                             contentColor   = Color.White
                         ),
                         elevation = ButtonDefaults.buttonElevation(0.dp)
                     ) {
-                        Text("♻️  Recycle a device", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                        Icon(Icons.Rounded.Recycling, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Recycle a device", fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
 
-            // ── Requests list ─────────────────────────────────────────────────
+            // ── List — same padding/spacing as MyListingsScreen grid ──────────
             else {
                 LazyColumn(
                     modifier            = Modifier.fillMaxSize(),
-                    contentPadding      = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    contentPadding      = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(requests, key = { it.id }) { request ->
                         RecycleRequestCard(request)
@@ -223,23 +230,23 @@ fun RecycledProductsScreen(navController: NavController) {
     }
 }
 
-// ─── Request card ─────────────────────────────────────────────────────────────
+// ─── Card — same shape/elevation/border as MyListingCard ─────────────────────
 @Composable
 private fun RecycleRequestCard(request: RecycleRequest) {
 
     // Condition → colour
     val (condColor, condSurface) = when (request.condition) {
-        "Working" -> AccentGreen  to AccentGreenSurface
-        "Damaged" -> AccentAmber  to AccentAmberSurface
-        else      -> Color(0xFFDC2626) to Color(0xFFFEF2F2)   // Dead → red
+        "Working" -> AccentGreen to AccentGreenSurface
+        "Damaged" -> AccentAmber to AccentAmberSurface
+        else      -> AccentRed   to AccentRedSurface
     }
 
     // Action → emoji
     val actionEmoji = when (request.action) {
-        "Donate"          -> "🤝"
-        "Recycle safely"  -> "♻️"
-        "Sell for parts"  -> "🔩"
-        else              -> "📦"
+        "Donate"         -> "🤝"
+        "Recycle safely" -> "♻️"
+        "Sell for parts" -> "🔩"
+        else             -> "📦"
     }
 
     // Collection → emoji
@@ -249,140 +256,105 @@ private fun RecycleRequestCard(request: RecycleRequest) {
         else       -> "📍"
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(Color.White)
-            .border(1.dp, BorderLight, RoundedCornerShape(20.dp))
+    Card(
+        modifier  = Modifier.fillMaxWidth(),
+        shape     = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(0.dp),
+        colors    = CardDefaults.cardColors(containerColor = Color.White),
+        border    = androidx.compose.foundation.BorderStroke(1.dp, BorderLight)
     ) {
+        Column {
 
-        // ── Device image (if available) ───────────────────────────────────────
-        if (request.imageUri.isNotEmpty()) {
-            AsyncImage(
-                model              = request.imageUri,
-                contentDescription = "Device photo",
-                contentScale       = ContentScale.Crop,
-                modifier           = Modifier
+            // ── Image with condition chip overlay — mirrors MyListingCard image box
+            Box(
+                modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
-                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-            )
-        }
-
-        Column(
-            modifier            = Modifier.padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-
-            // ── Header ────────────────────────────────────────────────────────
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                verticalAlignment     = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .height(140.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        request.deviceName,
-                        fontSize      = 15.sp,
-                        fontWeight    = FontWeight.SemiBold,
-                        color         = TextPrimary,
-                        letterSpacing = (-0.2).sp,
-                        maxLines      = 1
+                if (request.imageUri.isNotEmpty()) {
+                    AsyncImage(
+                        model              = request.imageUri,
+                        contentDescription = "Device photo",
+                        contentScale       = ContentScale.Crop,
+                        modifier           = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     )
-                    Text(
-                        "ID #${request.id.takeLast(6).uppercase()}",
-                        fontSize = 11.sp,
-                        color    = TextSecondary
-                    )
+                } else {
+                    // Placeholder gradient — same as MyListingCard
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                Brush.linearGradient(listOf(Color(0xFFE8ECF4), Color(0xFFCDD5E8))),
+                                RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Rounded.DevicesOther,
+                            contentDescription = null,
+                            tint     = Color(0xFFB0BAD0),
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
 
-                // Condition chip
-                Row(
+                // Condition chip — top-end overlay, same position as action buttons in MyListingCard
+                Box(
                     modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(6.dp)
                         .clip(RoundedCornerShape(20.dp))
-                        .background(condSurface)
-                        .padding(horizontal = 10.dp, vertical = 5.dp),
-                    verticalAlignment     = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        .background(condSurface.copy(alpha = 0.95f))
+                        .border(0.5.dp, condColor.copy(alpha = 0.25f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 9.dp, vertical = 4.dp)
                 ) {
                     Text(
-                        when (request.condition) {
-                            "Working" -> "✅"
-                            "Damaged" -> "⚠️"
-                            else      -> "💀"
+                        text = when (request.condition) {
+                            "Working" -> "✅  ${request.condition}"
+                            "Damaged" -> "⚠️  ${request.condition}"
+                            else      -> "💀  ${request.condition}"
                         },
-                        fontSize = 11.sp
-                    )
-                    Text(
-                        request.condition,
-                        fontSize   = 12.sp,
+                        fontSize   = 11.sp,
                         fontWeight = FontWeight.SemiBold,
                         color      = condColor
                     )
                 }
             }
 
-            HorizontalDivider(color = BorderLight, thickness = 0.5.dp)
-
-            // ── Detail badges ─────────────────────────────────────────────────
-            Row(
-                modifier              = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            // ── Info section — same padding as MyListingCard product info ─────
+            Column(
+                modifier = Modifier.padding(horizontal = 10.dp, vertical = 9.dp),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
             ) {
-                // Action
-                DetailBadge(
-                    modifier = Modifier.weight(1f),
-                    emoji    = actionEmoji,
-                    label    = "Action",
-                    value    = request.action,
-                    bgColor  = AccentGreenSurface
+                // Device name
+                Text(
+                    text          = request.deviceName,
+                    fontSize      = 13.sp,
+                    fontWeight    = FontWeight.SemiBold,
+                    color         = TextPrimary,
+                    maxLines      = 1,
+                    letterSpacing = (-0.2).sp
                 )
 
-                // Collection method
-                DetailBadge(
-                    modifier = Modifier.weight(1f),
-                    emoji    = collectionEmoji,
-                    label    = "Collection",
-                    value    = request.collectionMethod,
-                    bgColor  = PageBg
+                // ID — same role as price line in MyListingCard
+                Text(
+                    text       = "#${request.id.takeLast(6).uppercase()}",
+                    fontSize   = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color      = AccentBlue
+                )
+
+                // Action + collection — same role as category line
+                Text(
+                    text     = "$actionEmoji ${request.action}  ·  $collectionEmoji ${request.collectionMethod}",
+                    fontSize = 11.sp,
+                    color    = TextSecondary,
+                    maxLines = 1
                 )
             }
         }
-    }
-}
-
-// ─── Detail badge ─────────────────────────────────────────────────────────────
-@Composable
-private fun DetailBadge(
-    modifier : Modifier,
-    emoji    : String,
-    label    : String,
-    value    : String,
-    bgColor  : Color
-) {
-    Column(
-        modifier            = modifier
-            .clip(RoundedCornerShape(12.dp))
-            .background(bgColor)
-            .padding(10.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(emoji, fontSize = 20.sp, textAlign = TextAlign.Center)
-        Text(
-            label,
-            fontSize   = 10.sp,
-            color      = TextSecondary,
-            textAlign  = TextAlign.Center
-        )
-        Text(
-            value,
-            fontSize   = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color      = TextPrimary,
-            textAlign  = TextAlign.Center
-        )
     }
 }
 

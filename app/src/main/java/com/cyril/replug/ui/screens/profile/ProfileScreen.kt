@@ -326,6 +326,12 @@ fun ProfileScreen(navController: NavController) {
                 Spacer(Modifier.height(4.dp))
 
                 ProfileActionRow(
+                    icon  = Icons.Rounded.Inventory2,
+                    label = "My listings",
+                    onClick = { navController.navigate(ROUTE_MY_LISTINGS) }
+                )
+                HorizontalDivider(color = BorderLight, thickness = 0.5.dp)
+                ProfileActionRow(
                     icon  = Icons.Rounded.Receipt,
                     label = "My Order History",
                     onClick = { navController.navigate(ROUTE_ORDERS) }

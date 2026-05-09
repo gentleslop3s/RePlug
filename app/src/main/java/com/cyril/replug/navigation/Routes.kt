@@ -23,5 +23,6 @@ const val ROUTE_NOTIFICATION = "notification"
 const val ROUTE_RECYCLED_PRODUCTS = "recycledproducts"
 const val ROUTE_PRODUCT_DETAIL = "productdetail"
 const val ROUTE_CHAT_INBOX = "chatInbox"
+const val ROUTE_MY_LISTINGS = "myListings"
 
 
